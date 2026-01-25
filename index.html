@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Composizione Vettoriale - Corso di Fisica</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&family=IM+Fell+English:ital@0;1&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier Prime', 'Courier New', monospace;
+            background: 
+                radial-gradient(circle at 15% 20%, rgba(101, 67, 33, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 85% 80%, rgba(101, 67, 33, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(139, 90, 43, 0.05) 0%, transparent 60%),
+                linear-gradient(135deg, #f4e4c1 0%, #e8d4b0 25%, #d9bc8c 50%, #e8d4b0 75%, #f4e4c1 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(101, 67, 33, 0.03) 1px, rgba(101, 67, 33, 0.03) 2px),
+                repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(101, 67, 33, 0.02) 1px, rgba(101, 67, 33, 0.02) 2px);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(ellipse at 10% 15%, rgba(139, 90, 43, 0.08) 0%, transparent 30%),
+                radial-gradient(ellipse at 90% 85%, rgba(160, 120, 70, 0.06) 0%, transparent 25%),
+                radial-gradient(ellipse at 30% 70%, rgba(139, 90, 43, 0.05) 0%, transparent 20%),
+                radial-gradient(ellipse at 70% 30%, rgba(160, 120, 70, 0.07) 0%, transparent 25%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .gear {
+            position: fixed;
+            color: rgba(139, 90, 43, 0.15);
+            font-size: 120px;
+            animation: rotate 20s linear infinite;
+            pointer-events: none;
+            z-index: 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .gear1 { top: 5%; left: 3%; animation-duration: 25s; }
+        .gear2 { top: 60%; right: 5%; font-size: 150px; animation-duration: 30s; animation-direction: reverse; }
+        .gear3 { bottom: 10%; left: 8%; font-size: 90px; animation-duration: 20s; animation-direction: reverse; }
+        .gear4 { top: 30%; right: 15%; font-size: 70px; animation-duration: 18s; }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 40px auto;
+            background: linear-gradient(135deg, rgba(232, 212, 176, 0.95) 0%, rgba(217, 188, 140, 0.95) 100%);
+            border: 6px solid #8b5a2b;
+            box-shadow: 
+                0 0 0 2px #654321,
+                0 0 0 4px #8b5a2b,
+                0 20px 50px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                inset 0 0 100px rgba(139, 90, 43, 0.08);
+            padding: 50px 40px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .rivet {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: radial-gradient(circle, #8b6914 0%, #5d4610 100%);
+            border-radius: 50%;
+            border: 2px solid #654321;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.6), 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .rivet::before, .rivet::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 6px;
+            height: 2px;
+            background: #654321;
+        }
+        
+        .rivet::before { transform: translate(-50%, -50%); }
+        .rivet::after { transform: translate(-50%, -50%) rotate(90deg); }
+        
+        .rivet-tl { top: 25px; left: 25px; }
+        .rivet-tr { top: 25px; right: 25px; }
+        .rivet-bl { bottom: 25px; left: 25px; }
+        .rivet-br { bottom: 25px; right: 25px; }
+        
+        .metal-strip {
+            position: absolute;
+            background: linear-gradient(90deg, #8b6914 0%, #b8860b 50%, #8b6914 100%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+        }
+        
+        .metal-strip-top { top: 0; left: 0; right: 0; height: 6px; }
+        .metal-strip-bottom { bottom: 0; left: 0; right: 0; height: 6px; }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 4px solid #8b5a2b;
+            box-shadow: 0 2px 0 rgba(139, 90, 43, 0.3);
+        }
+        
+        h1 {
+            font-family: 'IM Fell English', serif;
+            font-size: 2.8em;
+            color: #4a3020;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2), 0 0 20px rgba(139, 90, 43, 0.2);
+            font-style: italic;
+            letter-spacing: 3px;
+        }
+        
+        h1::before { content: '⚙ '; font-style: normal; color: #8b5a2b; }
+        h1::after { content: ' ⚙'; font-style: normal; color: #8b5a2b; }
+        
+        .subtitle {
+            font-size: 1.1em;
+            color: #6d4a2a;
+            font-style: italic;
+            margin-top: 10px;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .canvas-section {
+            background: linear-gradient(135deg, rgba(255, 248, 230, 0.6) 0%, rgba(245, 235, 210, 0.6) 100%);
+            border: 4px solid #8b5a2b;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1), 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        #canvasContainer {
+            width: 100%;
+            height: 600px;
+            background: 
+                repeating-linear-gradient(0deg, transparent 0px, transparent 49px, rgba(139, 90, 43, 0.1) 49px, rgba(139, 90, 43, 0.1) 50px),
+                repeating-linear-gradient(90deg, transparent 0px, transparent 49px, rgba(139, 90, 43, 0.1) 49px, rgba(139, 90, 43, 0.1) 50px),
+                linear-gradient(180deg, rgba(255, 250, 240, 0.9) 0%, rgba(250, 240, 220, 0.9) 100%);
+            position: relative;
+            border: 2px solid #a0774a;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .origin {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: radial-gradient(circle, #8b5a2b 0%, #654321 100%);
+            border-radius: 50%;
+            border: 2px solid #4a3020;
+            box-shadow: 0 0 0 4px rgba(139, 90, 43, 0.2);
+            z-index: 10;
+        }
+        
+        .origin::before {
+            content: 'O';
+            position: absolute;
+            top: -25px;
+            left: -5px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #4a3020;
+        }
+        
+        .vector {
+            position: absolute;
+            cursor: move;
+            transition: transform 0.1s;
+            z-index: 5;
+        }
+        
+        .vector.dragging {
+            z-index: 100;
+            transform: scale(1.05);
+            filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
+        }
+        
+        .arrow {
+            position: relative;
+            background: linear-gradient(135deg, #b8860b 0%, #daa520 50%, #b8860b 100%);
+            border: 2px solid #8b6914;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            transform-origin: 0 0;
+        }
+        
+        .arrow::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-style: solid;
+        }
+        
+        .arrow.horizontal {
+            height: 12px;
+        }
+        
+        .arrow.horizontal::after {
+            right: -18px;
+            top: -4px;
+            border-width: 10px 0 10px 18px;
+            border-color: transparent transparent transparent #daa520;
+            filter: drop-shadow(2px 0 2px rgba(0, 0, 0, 0.3));
+        }
+        
+        .arrow.vertical {
+            width: 12px;
+        }
+        
+        .arrow.vertical::after {
+            bottom: -18px;
+            left: -4px;
+            border-width: 18px 10px 0 10px;
+            border-color: #daa520 transparent transparent transparent;
+            filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.3));
+        }
+        
+        .arrow.result {
+            background: linear-gradient(135deg, #c41e3a 0%, #e74c3c 50%, #c41e3a 100%);
+            border-color: #8b1a1a;
+        }
+        
+        .arrow.result.horizontal::after {
+            border-left-color: #e74c3c;
+        }
+        
+        .arrow.result.vertical::after {
+            border-top-color: #e74c3c;
+        }
+        
+        .vector-label {
+            position: absolute;
+            background: rgba(255, 248, 220, 0.95);
+            border: 2px solid #8b5a2b;
+            border-radius: 4px;
+            padding: 6px 10px;
+            font-weight: bold;
+            color: #4a3020;
+            white-space: nowrap;
+            font-size: 14px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            pointer-events: none;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .vector-label.result-label {
+            background: rgba(255, 230, 230, 0.95);
+            border-color: #c41e3a;
+            color: #8b1a1a;
+            font-size: 16px;
+            padding: 8px 12px;
+        }
+        
+        .control-panel {
+            background: linear-gradient(135deg, rgba(255, 248, 230, 0.8) 0%, rgba(245, 235, 210, 0.8) 100%);
+            border: 4px solid #8b5a2b;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1), 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .control-section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(139, 90, 43, 0.3);
+        }
+        
+        .control-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .control-section h3 {
+            font-family: 'Special Elite', cursive;
+            color: #4a3020;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        .button {
+            background: linear-gradient(135deg, #8b6914 0%, #b8860b 50%, #8b6914 100%);
+            border: 3px solid #654321;
+            color: #fff5e6;
+            padding: 12px 24px;
+            font-family: 'Special Elite', cursive;
+            font-size: 1em;
+            cursor: pointer;
+            border-radius: 6px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .button:hover {
+            background: linear-gradient(135deg, #9a7515 0%, #c99a0c 50%, #9a7515 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+        
+        .button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+        
+        .button-small {
+            padding: 8px 12px;
+            font-size: 0.85em;
+            width: auto;
+            display: inline-block;
+            margin: 5px 5px 5px 0;
+        }
+        
+        .button-invert {
+            background: linear-gradient(135deg, #5a4a3a 0%, #7a6a5a 50%, #5a4a3a 100%);
+        }
+        
+        .button-invert:hover {
+            background: linear-gradient(135deg, #6a5a4a 0%, #8a7a6a 50%, #6a5a4a 100%);
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #4a3020;
+            font-weight: bold;
+            font-size: 0.95em;
+        }
+        
+        .input-group input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 3px solid #8b5a2b;
+            border-radius: 4px;
+            font-family: 'Courier Prime', monospace;
+            font-size: 1em;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-transform: uppercase;
+        }
+        
+        .input-group input[type="text"]:focus {
+            outline: none;
+            border-color: #b8860b;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1), 0 0 0 3px rgba(184, 134, 11, 0.2);
+        }
+        
+        .vector-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .vector-control-item {
+            background: rgba(255, 255, 255, 0.5);
+            padding: 10px;
+            border-radius: 4px;
+            border: 2px solid rgba(139, 90, 43, 0.3);
+        }
+        
+        .vector-control-item label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #4a3020;
+            font-size: 0.9em;
+        }
+        
+        .maestro-toggle {
+            background: rgba(184, 134, 11, 0.1);
+            padding: 15px;
+            border-radius: 6px;
+            border: 2px solid #b8860b;
+            margin-bottom: 20px;
+        }
+        
+        .maestro-toggle label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-weight: bold;
+            color: #4a3020;
+        }
+        
+        .maestro-toggle input[type="checkbox"] {
+            margin-right: 10px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .message {
+            padding: 15px 20px;
+            border-radius: 6px;
+            margin-top: 20px;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            display: none;
+        }
+        
+        .message.success {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            border: 3px solid #229954;
+            color: white;
+        }
+        
+        .message.error {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            border: 3px solid #a93226;
+            color: white;
+        }
+        
+        .result-info {
+            background: rgba(196, 30, 58, 0.1);
+            border: 3px solid #c41e3a;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .result-info h3 {
+            color: #8b1a1a;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .result-info p {
+            color: #4a3020;
+            margin: 5px 0;
+            font-size: 0.95em;
+        }
+        
+        .result-info strong {
+            color: #c41e3a;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="gear gear1">⚙</div>
+    <div class="gear gear2">⚙</div>
+    <div class="gear gear3">⚙</div>
+    <div class="gear gear4">⚙</div>
+
+    <div class="container">
+        <div class="rivet rivet-tl"></div>
+        <div class="rivet rivet-tr"></div>
+        <div class="rivet rivet-bl"></div>
+        <div class="rivet rivet-br"></div>
+        <div class="metal-strip metal-strip-top"></div>
+        <div class="metal-strip metal-strip-bottom"></div>
+        
+        <header>
+            <h1>Composizione Vettoriale</h1>
+            <p class="subtitle">I.C. "C.Puddu", Corso di Fisica - prof. El Basri</p>
+            <p class="subtitle">Metodo Punta-Coda - Trova i vettori che generano la risultante</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="canvas-section">
+                <div id="canvasContainer">
+                    <div class="origin" style="left: 50%; top: 50%; transform: translate(-50%, -50%);"></div>
+                </div>
+            </div>
+            
+            <div class="control-panel">
+                <div class="result-info">
+                    <h3>🎯 Vettore Risultante da Trovare</h3>
+                    <p><strong>Modulo:</strong> <span id="resultMagnitude">-</span></p>
+                    <p><strong>Direzione:</strong> <span id="resultAngle">-</span></p>
+                </div>
+                
+                <div class="maestro-toggle">
+                    <label>
+                        <input type="checkbox" id="maestroMode">
+                        🎓 Modalità Maestro (consenti vettori opposti)
+                    </label>
+                </div>
+                
+                <div class="control-section" id="invertControls" style="display: none;">
+                    <h3>⚡ Inverti Vettori</h3>
+                    <div class="vector-controls">
+                        <div class="vector-control-item">
+                            <label>Vettore A</label>
+                            <button class="button button-small button-invert" onclick="toggleVector('A')">Inverti</button>
+                            <button class="button button-small" onclick="resetVector('A')">Ripristina</button>
+                        </div>
+                        <div class="vector-control-item">
+                            <label>Vettore B</label>
+                            <button class="button button-small button-invert" onclick="toggleVector('B')">Inverti</button>
+                            <button class="button button-small" onclick="resetVector('B')">Ripristina</button>
+                        </div>
+                        <div class="vector-control-item">
+                            <label>Vettore C</label>
+                            <button class="button button-small button-invert" onclick="toggleVector('C')">Inverti</button>
+                            <button class="button button-small" onclick="resetVector('C')">Ripristina</button>
+                        </div>
+                        <div class="vector-control-item" id="vectorDControl">
+                            <label>Vettore D</label>
+                            <button class="button button-small button-invert" onclick="toggleVector('D')">Inverti</button>
+                            <button class="button button-small" onclick="resetVector('D')">Ripristina</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>✍️ Indica i Vettori Sommati</h3>
+                    <div class="input-group">
+                        <label>Primo vettore:</label>
+                        <input type="text" id="vector1Input" placeholder="Es: A" maxlength="2">
+                    </div>
+                    <div class="input-group">
+                        <label>Secondo vettore:</label>
+                        <input type="text" id="vector2Input" placeholder="Es: B" maxlength="2">
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>⚙️ Controlli</h3>
+                    <button class="button" onclick="checkAnswer()">Verifica Risposta</button>
+                    <button class="button" onclick="resetPositions()">Reset Posizioni</button>
+                    <button class="button" onclick="generateNewProblem()">Nuovo Problema</button>
+                </div>
+                
+                <div id="message" class="message"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /*
+         * SISTEMA DI COORDINATE MATEMATICO STANDARD:
+         * - Asse X: positivo verso destra
+         * - Asse Y: positivo verso l'ALTO
+         * - Angoli: da 0° a 360°, senso ANTIORARIO partendo da destra
+         *   0° = destra, 90° = su, 180° = sinistra, 270° = giù
+         * 
+         * Per il DISEGNO in CSS dobbiamo convertire perché:
+         * - In CSS, Y è positivo verso il BASSO
+         * - Quindi: angleCSS = -angleMath
+         */
+        
+        let vectors = {};
+        let resultVector = {};
+        let correctVectorNames = [];
+        let draggedVector = null;
+        let offsetX = 0;
+        let offsetY = 0;
+        let maestroMode = false;
+        
+        const vectorNames = ['A', 'B', 'C', 'D'];
+        const pixelsPerUnit = 50;
+        
+        // Angoli disponibili (matematici standard)
+        const availableAngles = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330];
+        
+        document.getElementById('maestroMode').addEventListener('change', function() {
+            maestroMode = this.checked;
+            document.getElementById('invertControls').style.display = maestroMode ? 'block' : 'none';
+            
+            // Cambia i placeholder degli input
+            const input1 = document.getElementById('vector1Input');
+            const input2 = document.getElementById('vector2Input');
+            if (maestroMode) {
+                input1.placeholder = 'Es: A o -A';
+                input2.placeholder = 'Es: B o -B';
+            } else {
+                input1.placeholder = 'Es: A';
+                input2.placeholder = 'Es: B';
+            }
+            
+            generateNewProblem();
+        });
+        
+        function generateNewProblem() {
+            // Reset
+            document.getElementById('canvasContainer').innerHTML = 
+                '<div class="origin" style="left: 50%; top: 50%; transform: translate(-50%, -50%);"></div>';
+            document.getElementById('vector1Input').value = '';
+            document.getElementById('vector2Input').value = '';
+            document.getElementById('message').style.display = 'none';
+            vectors = {};
+            
+            // Decidi quanti vettori (3 o 4)
+            const numVectors = Math.random() < 0.5 ? 3 : 4;
+            const useD = numVectors === 4;
+            document.getElementById('vectorDControl').style.display = useD ? 'block' : 'none';
+            
+            // STEP 1: Genera DUE vettori casuali (MATEMATICI)
+            const angle1 = availableAngles[Math.floor(Math.random() * availableAngles.length)];
+            const mag1 = Math.floor(Math.random() * 4) + 2;
+            const vec1 = {
+                magnitude: mag1,
+                angle: angle1,
+                // Componenti matematiche standard (Y positivo verso l'alto)
+                x: mag1 * Math.cos(angle1 * Math.PI / 180),
+                y: mag1 * Math.sin(angle1 * Math.PI / 180)
+            };
+            
+            const angle2 = availableAngles[Math.floor(Math.random() * availableAngles.length)];
+            const mag2 = Math.floor(Math.random() * 4) + 2;
+            const vec2 = {
+                magnitude: mag2,
+                angle: angle2,
+                x: mag2 * Math.cos(angle2 * Math.PI / 180),
+                y: mag2 * Math.sin(angle2 * Math.PI / 180)
+            };
+            
+            // STEP 2: Calcola risultante
+            let resultX, resultY;
+            let useNegative = false;
+            let negativeIndex = -1;
+            
+            if (maestroMode && Math.random() < 0.3) {
+                useNegative = true;
+                negativeIndex = Math.random() < 0.5 ? 0 : 1;
+                if (negativeIndex === 0) {
+                    resultX = -vec1.x + vec2.x;
+                    resultY = -vec1.y + vec2.y;
+                } else {
+                    resultX = vec1.x - vec2.x;
+                    resultY = vec1.y - vec2.y;
+                }
+            } else {
+                resultX = vec1.x + vec2.x;
+                resultY = vec1.y + vec2.y;
+            }
+            
+            const resultMag = Math.sqrt(resultX * resultX + resultY * resultY);
+            let resultAngle = Math.atan2(resultY, resultX) * 180 / Math.PI;
+            if (resultAngle < 0) resultAngle += 360;
+            
+            resultVector = {
+                magnitude: resultMag,
+                angle: resultAngle,
+                x: resultX,
+                y: resultY
+            };
+            
+            document.getElementById('resultMagnitude').textContent = resultMag.toFixed(1) + ' u';
+            document.getElementById('resultAngle').textContent = resultAngle.toFixed(0) + '°';
+            
+            // STEP 3: Assegna nomi casuali
+            const availableIndices = [0, 1, 2];
+            if (useD) availableIndices.push(3);
+            
+            const idx1 = availableIndices.splice(Math.floor(Math.random() * availableIndices.length), 1)[0];
+            const idx2 = availableIndices.splice(Math.floor(Math.random() * availableIndices.length), 1)[0];
+            
+            const name1 = vectorNames[idx1];
+            const name2 = vectorNames[idx2];
+            
+            vectors[name1] = {
+                name: name1,
+                magnitude: vec1.magnitude,
+                angle: vec1.angle,
+                x: vec1.x,
+                y: vec1.y,
+                inverted: false
+            };
+            
+            vectors[name2] = {
+                name: name2,
+                magnitude: vec2.magnitude,
+                angle: vec2.angle,
+                x: vec2.x,
+                y: vec2.y,
+                inverted: false
+            };
+            
+            if (useNegative) {
+                correctVectorNames = negativeIndex === 0 ? ['-' + name1, name2] : [name1, '-' + name2];
+            } else {
+                correctVectorNames = [name1, name2];
+            }
+            
+            // STEP 4: Genera distrattori
+            for (let i = 0; i < availableIndices.length; i++) {
+                const name = vectorNames[availableIndices[i]];
+                let validVector = false;
+                let attempts = 0;
+                
+                while (!validVector && attempts < 50) {
+                    const angle = availableAngles[Math.floor(Math.random() * availableAngles.length)];
+                    const mag = Math.floor(Math.random() * 5) + 2;
+                    const vx = mag * Math.cos(angle * Math.PI / 180);
+                    const vy = mag * Math.sin(angle * Math.PI / 180);
+                    
+                    let isWrong = true;
+                    const tolerance = 0.5;
+                    
+                    for (let otherName in vectors) {
+                        const other = vectors[otherName];
+                        
+                        if (Math.abs((vx + other.x) - resultX) < tolerance && 
+                            Math.abs((vy + other.y) - resultY) < tolerance) {
+                            isWrong = false;
+                            break;
+                        }
+                        
+                        if (maestroMode) {
+                            if (Math.abs((vx - other.x) - resultX) < tolerance && 
+                                Math.abs((vy - other.y) - resultY) < tolerance) {
+                                isWrong = false;
+                                break;
+                            }
+                            if (Math.abs((-vx + other.x) - resultX) < tolerance && 
+                                Math.abs((-vy + other.y) - resultY) < tolerance) {
+                                isWrong = false;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (isWrong) {
+                        vectors[name] = {
+                            name: name,
+                            magnitude: mag,
+                            angle: angle,
+                            x: vx,
+                            y: vy,
+                            inverted: false
+                        };
+                        validVector = true;
+                    }
+                    attempts++;
+                }
+            }
+            
+            drawResultVector();
+            drawVectors();
+        }
+        
+        function drawResultVector() {
+            const container = document.getElementById('canvasContainer');
+            const rect = container.getBoundingClientRect();
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            const vectorEl = createVectorElement(
+                'R',
+                resultVector.magnitude,
+                resultVector.angle,
+                centerX,
+                centerY,
+                true
+            );
+            
+            vectorEl.style.cursor = 'default';
+            container.appendChild(vectorEl);
+        }
+        
+        function drawVectors() {
+            const container = document.getElementById('canvasContainer');
+            const rect = container.getBoundingClientRect();
+            
+            const positions = [
+                { x: 100, y: 100 },
+                { x: rect.width - 150, y: 100 },
+                { x: 100, y: rect.height - 150 },
+                { x: rect.width - 150, y: rect.height - 150 }
+            ];
+            
+            let posIndex = 0;
+            
+            for (let name of vectorNames) {
+                if (vectors[name]) {
+                    const vec = vectors[name];
+                    const pos = positions[posIndex];
+                    
+                    const displayAngle = vec.inverted ? (vec.angle + 180) % 360 : vec.angle;
+                    
+                    const vectorEl = createVectorElement(
+                        name,
+                        vec.magnitude,
+                        displayAngle,
+                        pos.x,
+                        pos.y,
+                        false,
+                        vec.inverted
+                    );
+                    
+                    vec.element = vectorEl;
+                    vec.initialX = pos.x;
+                    vec.initialY = pos.y;
+                    vec.currentX = pos.x;
+                    vec.currentY = pos.y;
+                    
+                    addDragListeners(vectorEl, vec);
+                    container.appendChild(vectorEl);
+                    
+                    posIndex++;
+                }
+            }
+        }
+        
+        function createVectorElement(label, magnitude, angleMath, x, y, isResult, isInverted = false) {
+            const vector = document.createElement('div');
+            vector.className = 'vector';
+            vector.style.left = x + 'px';
+            vector.style.top = y + 'px';
+            
+            const length = magnitude * pixelsPerUnit;
+            
+            // CONVERSIONE: angolo matematico → angolo CSS
+            // CSS: Y positivo verso il basso, rotazione oraria
+            // Matematica: Y positivo verso l'alto, rotazione antioraria
+            const angleCSS = -angleMath;
+            const angleRad = angleMath * Math.PI / 180;
+            
+            const arrow = document.createElement('div');
+            arrow.className = 'arrow ' + (isResult ? 'result' : '');
+            
+            // Usa sempre orizzontale e ruota
+            arrow.classList.add('horizontal');
+            arrow.style.width = length + 'px';
+            arrow.style.transform = `rotate(${angleCSS}deg)`;
+            arrow.style.transformOrigin = '0 50%';
+            
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'vector-label' + (isResult ? ' result-label' : '');
+            
+            if (isResult) {
+                labelDiv.textContent = `${label} = ${magnitude.toFixed(1)} u (${angleMath.toFixed(0)}°)`;
+            } else {
+                const displayLabel = isInverted ? `-${label}` : label;
+                labelDiv.textContent = `${displayLabel} = ${magnitude.toFixed(1)} u (${angleMath.toFixed(0)}°)`;
+            }
+            
+            vector.appendChild(arrow);
+            vector.appendChild(labelDiv);
+            
+            return vector;
+        }
+        
+        function addDragListeners(element, vectorData) {
+            element.addEventListener('mousedown', startDrag);
+            element.addEventListener('touchstart', startDrag);
+            
+            function startDrag(e) {
+                e.preventDefault();
+                draggedVector = { element, vectorData };
+                element.classList.add('dragging');
+                
+                const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+                
+                const rect = element.getBoundingClientRect();
+                offsetX = clientX - rect.left;
+                offsetY = clientY - rect.top;
+                
+                document.addEventListener('mousemove', drag);
+                document.addEventListener('touchmove', drag);
+                document.addEventListener('mouseup', stopDrag);
+                document.addEventListener('touchend', stopDrag);
+            }
+        }
+        
+        function drag(e) {
+            if (!draggedVector) return;
+            
+            const container = document.getElementById('canvasContainer');
+            const containerRect = container.getBoundingClientRect();
+            
+            const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+            
+            let newX = clientX - containerRect.left - offsetX;
+            let newY = clientY - containerRect.top - offsetY;
+            
+            const maxX = containerRect.width - 50;
+            const maxY = containerRect.height - 50;
+            
+            newX = Math.max(0, Math.min(newX, maxX));
+            newY = Math.max(0, Math.min(newY, maxY));
+            
+            draggedVector.element.style.left = newX + 'px';
+            draggedVector.element.style.top = newY + 'px';
+            
+            draggedVector.vectorData.currentX = newX;
+            draggedVector.vectorData.currentY = newY;
+        }
+        
+        function stopDrag() {
+            if (draggedVector) {
+                draggedVector.element.classList.remove('dragging');
+                draggedVector = null;
+            }
+            
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('touchmove', drag);
+            document.removeEventListener('mouseup', stopDrag);
+            document.removeEventListener('touchend', stopDrag);
+        }
+        
+        function resetPositions() {
+            for (let name in vectors) {
+                if (vectors[name].element) {
+                    vectors[name].element.style.left = vectors[name].initialX + 'px';
+                    vectors[name].element.style.top = vectors[name].initialY + 'px';
+                    vectors[name].currentX = vectors[name].initialX;
+                    vectors[name].currentY = vectors[name].initialY;
+                }
+            }
+            document.getElementById('message').style.display = 'none';
+        }
+        
+        function toggleVector(name) {
+            if (!vectors[name]) return;
+            
+            vectors[name].inverted = !vectors[name].inverted;
+            
+            const container = document.getElementById('canvasContainer');
+            const oldElement = vectors[name].element;
+            const x = vectors[name].currentX;
+            const y = vectors[name].currentY;
+            
+            oldElement.remove();
+            
+            const displayAngle = vectors[name].inverted ? 
+                (vectors[name].angle + 180) % 360 : 
+                vectors[name].angle;
+            
+            const newElement = createVectorElement(
+                name,
+                vectors[name].magnitude,
+                displayAngle,
+                x,
+                y,
+                false,
+                vectors[name].inverted
+            );
+            
+            vectors[name].element = newElement;
+            addDragListeners(newElement, vectors[name]);
+            container.appendChild(newElement);
+        }
+        
+        function resetVector(name) {
+            if (!vectors[name] || !vectors[name].inverted) return;
+            toggleVector(name);
+        }
+        
+        function checkAnswer() {
+            let input1 = document.getElementById('vector1Input').value.toUpperCase().trim();
+            let input2 = document.getElementById('vector2Input').value.toUpperCase().trim();
+            
+            if (!input1 || !input2) {
+                showMessage('Inserisci entrambi i nomi dei vettori!', 'error');
+                return;
+            }
+            
+            // Gestisci segno negativo
+            const isNeg1 = input1.startsWith('-');
+            const isNeg2 = input2.startsWith('-');
+            const vecName1 = isNeg1 ? input1.substring(1) : input1;
+            const vecName2 = isNeg2 ? input2.substring(1) : input2;
+            
+            if (!vectors[vecName1] || !vectors[vecName2]) {
+                showMessage('Nomi vettori non validi!', 'error');
+                return;
+            }
+            
+            if (vecName1 === vecName2 && isNeg1 === isNeg2) {
+                showMessage('Devi scegliere due vettori diversi!', 'error');
+                return;
+            }
+            
+            const vec1 = vectors[vecName1];
+            const vec2 = vectors[vecName2];
+            
+            // Calcola componenti considerando inversioni
+            const useNeg1 = vec1.inverted !== isNeg1;
+            const useNeg2 = vec2.inverted !== isNeg2;
+            
+            const vec1x = useNeg1 ? -vec1.x : vec1.x;
+            const vec1y = useNeg1 ? -vec1.y : vec1.y;
+            const vec2x = useNeg2 ? -vec2.x : vec2.x;
+            const vec2y = useNeg2 ? -vec2.y : vec2.y;
+            
+            const sumX = vec1x + vec2x;
+            const sumY = vec1y + vec2y;
+            
+            const tolerance = 0.5;
+            
+            if (Math.abs(sumX - resultVector.x) < tolerance && 
+                Math.abs(sumY - resultVector.y) < tolerance) {
+                
+                const displayVec1 = useNeg1 ? `-${vecName1}` : vecName1;
+                const displayVec2 = useNeg2 ? `-${vecName2}` : vecName2;
+                showMessage(`🎉 Esatto! ${displayVec1} + ${displayVec2} = R`, 'success');
+            } else {
+                showMessage('❌ Non è corretto. Riprova!', 'error');
+            }
+        }
+        
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.innerHTML = text;
+            messageDiv.className = 'message ' + type;
+            messageDiv.style.display = 'block';
+        }
+        
+        document.getElementById('vector2Input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+        
+        window.onload = generateNewProblem;
+    </script>
+</body>
+</html>
