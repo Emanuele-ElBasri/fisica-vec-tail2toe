@@ -602,6 +602,7 @@
         
         let vectors = {};
         let resultVector = {};
+        let resultElement = null;
         let correctVectorNames = [];
         let draggedVector = null;
         let offsetX = 0;
@@ -681,6 +682,17 @@
                     resultX = vec1.x - vec2.x;
                     resultY = vec1.y - vec2.y;
                 }
+                // Sicurezza: se la somma diretta coincide con la risultante con segno negativo,
+                // il problema sarebbe risolvibile senza vettori opposti → forza somma diretta
+                const directSumX = vec1.x + vec2.x;
+                const directSumY = vec1.y + vec2.y;
+                const tol = 0.5;
+                if (Math.abs(directSumX - resultX) < tol && Math.abs(directSumY - resultY) < tol) {
+                    useNegative = false;
+                    negativeIndex = -1;
+                    resultX = directSumX;
+                    resultY = directSumY;
+                }
             } else {
                 resultX = vec1.x + vec2.x;
                 resultY = vec1.y + vec2.y;
@@ -751,25 +763,20 @@
                     
                     for (let otherName in vectors) {
                         const other = vectors[otherName];
-                        
-                        if (Math.abs((vx + other.x) - resultX) < tolerance && 
-                            Math.abs((vy + other.y) - resultY) < tolerance) {
-                            isWrong = false;
-                            break;
-                        }
-                        
-                        if (maestroMode) {
-                            if (Math.abs((vx - other.x) - resultX) < tolerance && 
-                                Math.abs((vy - other.y) - resultY) < tolerance) {
-                                isWrong = false;
-                                break;
-                            }
-                            if (Math.abs((-vx + other.x) - resultX) < tolerance && 
-                                Math.abs((-vy + other.y) - resultY) < tolerance) {
+                        // Controlla tutte le combinazioni ±dist ± altro per escludere
+                        // qualsiasi coppia (anche con negazione) che produca la risultante
+                        const combos = [
+                            [vx + other.x, vy + other.y],
+                            [vx - other.x, vy - other.y],
+                            [-vx + other.x, -vy + other.y],
+                        ];
+                        for (const [cx, cy] of combos) {
+                            if (Math.abs(cx - resultX) < tolerance && Math.abs(cy - resultY) < tolerance) {
                                 isWrong = false;
                                 break;
                             }
                         }
+                        if (!isWrong) break;
                     }
                     
                     if (isWrong) {
@@ -806,7 +813,14 @@
                 true
             );
             
-            vectorEl.style.cursor = 'default';
+            const resultData = {
+                initialX: centerX,
+                initialY: centerY,
+                currentX: centerX,
+                currentY: centerY
+            };
+            resultElement = { element: vectorEl, data: resultData };
+            addDragListeners(vectorEl, resultData);
             container.appendChild(vectorEl);
         }
         
@@ -962,6 +976,12 @@
                     vectors[name].currentY = vectors[name].initialY;
                 }
             }
+            if (resultElement) {
+                resultElement.element.style.left = resultElement.data.initialX + 'px';
+                resultElement.element.style.top = resultElement.data.initialY + 'px';
+                resultElement.data.currentX = resultElement.data.initialX;
+                resultElement.data.currentY = resultElement.data.initialY;
+            }
             document.getElementById('message').style.display = 'none';
         }
         
@@ -1065,8 +1085,7 @@
             if (e.key === 'Enter') {
                 checkAnswer();
             }
-        });
-        
+        });        
         window.onload = generateNewProblem;
     </script>
 </body>
